@@ -1,14 +1,20 @@
 {
-  "name": "team-reflex/discord-php",
+  "name": "zinntikumugai/discord-php",
   "description": "An unofficial API to interact with the voice and text service Discord.",
   "license": "MIT",
   "authors": [
     {
+      "name": "zinntikumugai",
+      "email": "uesitananame55@gmail.com"
+    },
+    {
       "name": "David Cole",
+      "role": "Original Developer",
       "email": "david@team-reflex.com"
     },
     {
       "name": "Aaron Scherer",
+      "role": "Original Contributor",
       "email": "aequasi@gmail.com"
     }
   ],
