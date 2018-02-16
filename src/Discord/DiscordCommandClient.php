@@ -90,47 +90,86 @@ class DiscordCommandClient extends Discord
         if ($this->commandClientOptions['defaultHelpCommand']) {
             $this->registerCommand('help', function ($message, $args) {
                 $prefix = str_replace((string) $this->user, '@'.$this->username, $this->commandClientOptions['prefix']);
+                $emb = [];
+                $emb['color'] = 0x0080ff;
+                $emb['author'] = [];
+                $emb['author']['name']   = $message->author->username.'#'.$message->author->discriminator;
+                $emb['author']['icon_url'] = $message->author->user->avatar;
+                $emb['footer'] = [];
+                $emb['footer']['text'] = $prefix.'help [command] で詳細が確認できます。';
+                $emb['fields'] = [];
+
 
                 if (count($args) > 0) {
                     $commandString = implode(' ', $args);
                     $command = $this->getCommand($commandString);
 
+                    $emb['title'] = $prefix.$commandString;
+                    $emb['description'] = '引数';
                     if (is_null($command)) {
-                        return "The command {$commandString} does not exist.";
-                    }
+                        $emb['color'] = 0xff0000;
+                        $emb['description'] = 'コマンドが見つかりませんでした。';
+                        //return "The command {$commandString} does not exist.";
+                    }else {
+                        $help = $command->getHelp($prefix);
+                        //$emb['description'] = $help['text'];
+                        $emb['description'] = $command->description;
+                        /*.
+                        $data = ['コマンド名' => $command->command, '説明' =>$command->description];
+                        foreach ($data as $name => $value) {
+                            $c = [
+                                'name' => $name,
+                                'value' => $value,
+                                'inline' => true
+                            ];
+                            array_push($emb['fields'],$c);
+                        }*/
 
-                    $help = $command->getHelp($prefix);
-                    $response = "```\r\n{$this->commandClientOptions['name']} - {$this->commandClientOptions['description']}\r\n\r\n{$help['text']}Aliases:\r\n";
+                        $c = [
+                            'name' =>  '=========',
+                            'value' => 'エイリアス',
+                            'inline' => false
+                        ];
+                        array_push($emb['fields'],$c);
 
-                    foreach ($this->aliases as $alias => $command) {
-                        if ($command != $commandString) {
-                            continue;
+                        foreach ($this->aliases as $alias => $command) {
+                            if ($command != $commandString) {
+                                continue;
+                            }
+
+                            $c = [
+                                'name' =>  $prefix.$alias,
+                                'value' => "-",
+                                'inline' => true
+                            ];
+                            array_push($emb['fields'],$c);
                         }
-
-                        $response .= "- {$alias}\r\n";
                     }
 
-                    $response .= '```';
-
-                    $message->channel->sendMessage($response);
+                    var_dump($emb);
+                    $message->channel->sendMessage($message->author.' ',false, $emb);
 
                     return;
                 }
-
-                $response = "```\r\n{$this->commandClientOptions['name']} - {$this->commandClientOptions['description']}\r\n\r\n";
+                $emb['title'] = 'コマンド一覧';
+                $emb['description'] = 'コマンドの詳細です';
 
                 foreach ($this->commands as $command) {
                     $help = $command->getHelp($prefix);
-                    $response .= $help['text'];
+                    //$response .= $help['text'];
+                    $c = [
+                        'name' => $command->command,
+                        'value' => $command->description,//.$help['text'],
+                        'inline' => true
+                    ];
+                    array_push($emb['fields'],$c);
                 }
 
-                $response .= "Run {$prefix}help command to get more information about a specific function.\r\n";
-                $response .= '```';
-
-                $message->channel->sendMessage($response);
+                $message->channel->sendMessage($message->author.' ',false, $emb);
             }, [
-                'description' => 'Provides a list of commands available.',
+                'description' => '使用可能なコマンドを表示します',
                 'usage'       => '[command]',
+                'aliases' => ['?','ヘルプ']
             ]);
         }
     }
